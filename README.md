@@ -1,3 +1,7 @@
+# What is this fork about?
+
+Changing configurations in `docker-compose.yml` to use my external network and avoid exposing ports from the host
+
 # ProtonMail IMAP/SMTP Bridge Docker Container
 
 ![version badge](https://img.shields.io/docker/v/shenxn/protonmail-bridge)
