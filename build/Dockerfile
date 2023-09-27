@@ -10,7 +10,7 @@ COPY build.sh VERSION /build/
 RUN bash build.sh
 
 FROM ubuntu:jammy
-LABEL maintainer="Xiaonan Shen <s@sxn.dev>"
+LABEL org.opencontainers.image.source="https://github.com/Enucatl/protonmail-bridge-docker/"
 
 EXPOSE 25/tcp
 EXPOSE 143/tcp
