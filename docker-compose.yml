@@ -2,7 +2,7 @@ version: '2.1'
 
 services:
   protonmail-bridge:
-    image: shenxn/protonmail-bridge
+    image: ghcr.io/enucatl/protonmail-bridge:master
     build:
       context: ./build
       dockerfile: Dockerfile
