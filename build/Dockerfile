@@ -28,9 +28,7 @@ COPY --from=build /build/proton-bridge/bridge /protonmail/
 COPY --from=build /build/proton-bridge/proton-bridge /protonmail/
 
 # Add a user 'protonmail' with UID 8535
-RUN useradd -u 8535 -d /home/protonmail protonmail \
-    && mkdir -p /home/protonmail \
-    && chown protonmail: /home/protonmail
+RUN useradd -u 8535 -d /home/protonmail protonmail
 # change to non-privileged user for extra security
 USER protonmail
 
