@@ -12,6 +12,8 @@ services:
     tty: true
     networks:
       - traefik_proxy
+    volumes:
+      - protonmail:/home/protonmail
 
 volumes:
   protonmail:
