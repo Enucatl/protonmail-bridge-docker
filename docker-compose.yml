@@ -3,6 +3,7 @@ version: '2.1'
 services:
   protonmail-bridge:
     image: ghcr.io/enucatl/protonmail-bridge:master
+    user: "8535:8535"
     build:
       context: ./build
       dockerfile: Dockerfile
