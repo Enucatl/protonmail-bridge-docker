@@ -43,7 +43,8 @@ tag | description
 To initialize and add account to the bridge, run the following command.
 
 ```
-docker run --rm -it -v protonmail:/home/protonmail shenxn/protonmail-bridge init
+docker compose build
+docker compose run -it protonmail-bridge init
 ```
 
 If you want to use Docker Compose instead, you can create a copy of the provided example [docker-compose.yml](docker-compose.yml) file, modify it to suit your needs, and then run the following command:
@@ -59,7 +60,7 @@ Wait for the bridge to startup, then you will see a prompt appear for [Proton Ma
 To run the container, use the following command.
 
 ```
-docker run -d --name=protonmail-bridge -v protonmail:/home/protonmail -p 1025:25/tcp -p 1143:143/tcp --restart=unless-stopped shenxn/protonmail-bridge
+docker compose run
 ```
 
 Or, if using Docker Compose, use the following command.
