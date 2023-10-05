@@ -19,7 +19,7 @@ services:
       - /home/user/docker/traefik/data/certs/protonmail-bridge.nuc10i7fnh.home.arpa/fullchain.pem:/home/protonmail/.config/protonmail/bridge/cert.pem:ro
     labels:
       - 'traefik.enable=true'
-      - 'traefik.tcp.routers.protonmail-bridge-imap.rule=HostSNI(`protonmail-bridge.nuc10i7fnh.home.arpa`)'
+      - 'traefik.tcp.routers.protonmail-bridge-imap.rule=HostSNI(`*`)'
       - 'traefik.tcp.routers.protonmail-bridge-imap.entrypoints=protonmail-bridge-imap'
       - 'traefik.tcp.routers.protonmail-bridge-imap.tls.passthrough=true'
       - 'traefik.tcp.services.protonmail-bridge-imap.loadbalancer.server.port=1243'
