@@ -20,6 +20,8 @@ services:
       - protonmail:/home/protonmail
       - /nfs_exports/home/user/docker/traefik/data/certs/nuc10i7fnh.home.arpa/protonmail-bridge-privkey.pem:/home/protonmail/.config/protonmail/bridge-v3/key.pem:ro
       - /nfs_exports/home/user/docker/traefik/data/certs/nuc10i7fnh.home.arpa/protonmail-bridge-fullchain.pem:/home/protonmail/.config/protonmail/bridge-v3/cert.pem:ro
+    labels:
+      - "checkmk_monitor=true"
 
 volumes:
   protonmail:
