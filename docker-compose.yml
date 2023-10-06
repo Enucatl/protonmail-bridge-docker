@@ -1,4 +1,4 @@
-version: '2.1'
+version: '3.8'
 
 services:
   protonmail-bridge:
@@ -11,19 +11,15 @@ services:
     restart: unless-stopped
     stdin_open: true 
     tty: true
+    ports:
+      - "10243:1243"
+      - "10125:1125"
     networks:
       - traefik_proxy
     volumes:
       - protonmail:/home/protonmail
-      - /home/user/docker/traefik/data/certs/protonmail-bridge.nuc10i7fnh.home.arpa/privkey.pem:/home/protonmail/.config/protonmail/bridge/key.pem:ro
-      - /home/user/docker/traefik/data/certs/protonmail-bridge.nuc10i7fnh.home.arpa/fullchain.pem:/home/protonmail/.config/protonmail/bridge/cert.pem:ro
-    labels:
-      - 'traefik.enable=true'
-      - 'traefik.tcp.routers.protonmail-bridge-imap.rule=HostSNI(`*`)'
-      - 'traefik.tcp.routers.protonmail-bridge-imap.entrypoints=protonmail-bridge-imap'
-      - 'traefik.tcp.routers.protonmail-bridge-imap.tls.passthrough=true'
-      - 'traefik.tcp.services.protonmail-bridge-imap.loadbalancer.server.port=1243'
-      - 'traefik.tcp.routers.protonmail-bridge-imap.service=protonmail-bridge-imap'
+      - /nfs_exports/home/user/docker/traefik/data/certs/nuc10i7fnh.home.arpa/protonmail-bridge-privkey.pem:/home/protonmail/.config/protonmail/bridge-v3/key.pem:ro
+      - /nfs_exports/home/user/docker/traefik/data/certs/nuc10i7fnh.home.arpa/protonmail-bridge-fullchain.pem:/home/protonmail/.config/protonmail/bridge-v3/cert.pem:ro
 
 volumes:
   protonmail:
