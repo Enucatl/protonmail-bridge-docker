@@ -12,9 +12,6 @@ RUN bash build.sh
 FROM ubuntu:jammy
 LABEL org.opencontainers.image.source="https://github.com/Enucatl/protonmail-bridge-docker/"
 
-EXPOSE 25/tcp
-EXPOSE 143/tcp
-
 # Install dependencies and protonmail bridge
 RUN apt-get update \
     && apt-get install -y --no-install-recommends dbus-x11 socat pass libsecret-1-0 ca-certificates \
