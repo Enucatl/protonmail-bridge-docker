@@ -21,23 +21,6 @@ Docker Hub: [https://hub.docker.com/r/shenxn/protonmail-bridge](https://hub.dock
 
 GitHub: [https://github.com/shenxn/protonmail-bridge-docker](https://github.com/shenxn/protonmail-bridge-docker)
 
-## ARM Support
-
-We now support ARM devices (`arm64` and `arm/v7`)! Use the images tagged with `build`. See next section for details.
-
-## Tags
-
-There are two types of images.
- - `deb`: Images based on the official [.deb release](https://protonmail.com/bridge/install). It only supports the `amd64` architecture.
- - `build`: Images based on the [source code](https://github.com/ProtonMail/proton-bridge). It supports `amd64`, `arm64`, `arm/v7` and `riscv64`. Supporting to more architectures is possible. PRs are welcome.
-
-tag | description
- -- | --
-`latest` | latest `deb` image
-`[version]` | `deb` images
-`build` | latest `build` image
-`[version]-build` | `build` images
-
 ## Initialization
 
 To initialize and add account to the bridge, run the following command.
@@ -54,7 +37,7 @@ Wait for the bridge to startup, use `login` command and follow the instructions 
 To run the container, use the following command.
 
 ```
-docker compose run
+docker compose run --service-ports
 ```
 
 ## Kubernetes
@@ -62,20 +45,6 @@ docker compose run
 If you want to run this image in a Kubernetes environment. You can use the [Helm](https://helm.sh/) chart (https://github.com/k8s-at-home/charts/tree/master/charts/stable/protonmail-bridge) created by [@Eagleman7](https://github.com/Eagleman7). More details can be found in [#23](https://github.com/shenxn/protonmail-bridge-docker/issues/23).
 
 If you don't want to use Helm, you can also reference to the guide ([#6](https://github.com/shenxn/protonmail-bridge-docker/issues/6)) written by [@ghudgins](https://github.com/ghudgins).
-
-## Security
-
-Please be aware that running the command above will expose your bridge to the network. Remember to use firewall if you are going to run this in an untrusted network or on a machine that has public IP address. You can also use the following command to publish the port to only localhost, which is the same behavior as the official bridge package.
-
-```
-docker run -d --name=protonmail-bridge -v protonmail:/home/protonmail -p 127.0.0.1:1025:25/tcp -p 127.0.0.1:1143:143/tcp --restart=unless-stopped shenxn/protonmail-bridge
-```
-
-Besides, you can publish only port 25 (SMTP) if you don't need to receive any email (e.g. as a email notification service).
-
-## Compatibility
-
-The bridge currently only supports some of the email clients. More details can be found on the official website. I've tested this on a Synology DiskStation and it runs well. However, you may need ssh onto it to run the interactive docker command to add your account. The main reason of using this instead of environment variables is that it seems to be the best way to support two-factor authentication.
 
 ## Bridge CLI Guide
 
