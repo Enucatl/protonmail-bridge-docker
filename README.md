@@ -1,10 +1,11 @@
 # What is this fork about?
 
-- Changing configurations in `docker-compose.yml` to use my external network and avoid exposing ports from the host.
-- Remove deb version because I don't care about it 
-- Use official golang image
-- Publish my image to github with actions, only for amd64
+- Allow connecting with ipv6.
 - Run as nonroot user
+- Changing configurations in `docker-compose.yml` to use my external network.
+- Remove deb version because I don't care about it.
+- Use official golang image, instead of an obscure fork.
+- Publish my image to github with actions, only for amd64
 
 
 # ProtonMail IMAP/SMTP Bridge Docker Container
