@@ -53,7 +53,6 @@ jobs:
           image: localhost:5000/protonmail-bridge:latest
           fail-build: true
           severity-cutoff: critical
-          acs-report-enable: true
       - name: Inspect action SARIF report
         run: cat ${{ steps.scan.outputs.sarif }}
       - name: Upload Anchore scan SARIF report
