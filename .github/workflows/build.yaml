@@ -30,10 +30,10 @@ jobs:
         uses: actions/checkout@master
       - name: Set version
         id: version
-        run: echo "::set-output name=version::`cat build/VERSION`"
+        run: echo "version=`cat build/VERSION`" >> $GITHUB_OUTPUT
       - name: Set repo
         id: repo
-        run: if [[ $GITHUB_REF == "refs/heads/master" ]]; then echo "::set-output name=repo::${DOCKER_REPO}"; else echo "::set-output name=repo::${DOCKER_REPO_DEV}"; fi
+        run: if [[ $GITHUB_REF == "refs/heads/master" ]]; then echo "repo=${DOCKER_REPO}" >> $GITHUB_OUTPUT; else echo "repo=${DOCKER_REPO_DEV}" >> $GITHUB_OUTPUT; fi
       - name: Docker meta
         id: docker_meta
         uses: docker/metadata-action@v5
@@ -48,7 +48,7 @@ jobs:
           tags: localhost:5000/protonmail-bridge:latest
       - name: Scan image
         id: scan
-        uses: anchore/scan-action@v2
+        uses: anchore/scan-action@v3
         with:
           image: localhost:5000/protonmail-bridge:latest
           fail-build: true
@@ -74,8 +74,8 @@ jobs:
           file: ./build/Dockerfile
           platforms: ${{ env.PLATFORMS }}
           tags: |
-            ${{ steps.repo.outputs.repo }}:build
-            ${{ steps.repo.outputs.repo }}:${{ steps.version.outputs.version }}-build
+            $repo:build
+            $repo:$version-build
             ${{ steps.docker_meta.outputs.tags }}
           labels: ${{ steps.docker_meta.outputs.labels }}
           push: ${{ github.event_name != 'pull_request' }}
