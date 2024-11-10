@@ -1,5 +1,5 @@
 # Use official golang image
-FROM golang:1.21-bullseye AS build
+FROM golang:1.23-bullseye AS build
 
 # Install dependencies
 RUN apt-get update && apt-get install -y git build-essential libsecret-1-dev
@@ -9,7 +9,7 @@ WORKDIR /build/
 COPY build.sh VERSION /build/
 RUN bash build.sh
 
-FROM ubuntu:jammy
+FROM ubuntu:noble
 LABEL org.opencontainers.image.source="https://github.com/Enucatl/protonmail-bridge-docker/"
 
 # Install dependencies and protonmail bridge
