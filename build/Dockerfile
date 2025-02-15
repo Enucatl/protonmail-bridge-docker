@@ -1,16 +1,19 @@
-# Use official golang image
-FROM golang:1.23-bullseye AS build
+# The build image could be golang, but it currently does not support riscv64. Only debian:sid does, at the time of writing.
+FROM debian:sid-slim AS build
 
 # Install dependencies
-RUN apt-get update && apt-get install -y git build-essential libsecret-1-dev
+RUN apt-get update && apt-get install -y git golang build-essential libsecret-1-dev
 
 # Build
 WORKDIR /build/
 COPY build.sh VERSION /build/
 RUN bash build.sh
 
-FROM ubuntu:noble
-LABEL org.opencontainers.image.source="https://github.com/Enucatl/protonmail-bridge-docker/"
+FROM debian:sid-slim
+LABEL maintainer="Simon Felding <sife@adm.ku.dk>"
+
+EXPOSE 25/tcp
+EXPOSE 143/tcp
 
 # Install dependencies and protonmail bridge
 RUN apt-get update \
@@ -23,6 +26,7 @@ COPY gpgparams entrypoint.sh /protonmail/
 # Copy protonmail
 COPY --from=build /build/proton-bridge/bridge /protonmail/
 COPY --from=build /build/proton-bridge/proton-bridge /protonmail/
+COPY --from=build /build/proton-bridge/vault-editor /protonmail/
 
 # Add a user 'protonmail' with UID 8535
 RUN useradd -u 8535 -d /home/protonmail protonmail
