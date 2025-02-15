@@ -1,10 +1,7 @@
 # What is this fork about?
 
 - Allow connecting with ipv6.
-- Run as nonroot user
 - Changing configurations in `docker-compose.yml` to use my external network.
-- Remove deb version because I don't care about it.
-- Use official golang image, instead of an obscure fork.
 - Publish my image to github with actions, only for amd64
 
 
