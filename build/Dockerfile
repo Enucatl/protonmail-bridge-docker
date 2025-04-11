@@ -1,5 +1,5 @@
 # The build image could be golang, but it currently does not support riscv64. Only debian:sid does, at the time of writing.
-FROM debian:stable-slim AS build
+FROM ubuntu:latest-slim AS build
 
 # Install dependencies
 RUN apt-get update && apt-get install -y git golang build-essential libsecret-1-dev
@@ -9,7 +9,7 @@ WORKDIR /build/
 COPY build.sh VERSION /build/
 RUN bash build.sh
 
-FROM debian:stable-slim
+FROM ubuntu:latest-slim
 LABEL maintainer="Simon Felding <sife@adm.ku.dk>"
 
 EXPOSE 25/tcp
