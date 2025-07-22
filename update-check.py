@@ -1,8 +1,10 @@
-import sys
-import os
-import requests
 import json
+import os
 import re
+import sys
+
+import requests
+
 
 is_pull_request = sys.argv[1] == "true"
 print(f"is_pull_request={is_pull_request}")

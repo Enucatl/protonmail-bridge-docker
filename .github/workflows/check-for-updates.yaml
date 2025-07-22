@@ -32,7 +32,7 @@ jobs:
         # The script's first argument indicates if it's a pull request.
         # For scheduled/dispatch runs, it's not a PR, so 'false' is passed.
         run: uv run python update-check.py false
-        env:
+        # env:
           # Optional: If update-check.py needs any environment variables
           # e.g., for GitHub API rate limits if you hit them often:
           # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
