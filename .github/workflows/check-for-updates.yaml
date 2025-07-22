@@ -1,0 +1,38 @@
+# .github/workflows/check-for-updates.yaml
+name: Check for Upstream Proton Bridge Updates
+
+on:
+  schedule:
+    # Run daily at 00:00 UTC
+    - cron: '0 0 * * *'
+  workflow_dispatch: # Allows manual triggering from GitHub UI
+
+jobs:
+  check_and_update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          # This token is crucial for update-check.py to commit and push changes.
+          # The default GITHUB_TOKEN has sufficient permissions for this.
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: 3.13
+
+      - name: Install Python dependencies (if any)
+        # Add any necessary pip installs for update-check.py if it uses non-standard libraries.
+        # For 'requests' and 'json', they are usually built-in or common.
+        run: uv pip install requests
+
+      - name: Run update check script
+        # The script's first argument indicates if it's a pull request.
+        # For scheduled/dispatch runs, it's not a PR, so 'false' is passed.
+        run: uv run python update-check.py false
+        env:
+          # Optional: If update-check.py needs any environment variables
+          # e.g., for GitHub API rate limits if you hit them often:
+          # GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -6,12 +6,14 @@ on:
       - master
       - dev
     paths:
+      # Trigger when workflow file changes
       - .github/workflows/build.yaml
-      - build/*
+      # Trigger when any file in the 'build' directory changes (including VERSION)
+      - build/**
   pull_request:
     paths:
       - .github/workflows/build.yaml
-      - build/*
+      - build/**
   workflow_dispatch:
 
 env:
@@ -28,25 +30,53 @@ jobs:
           - 5000:5000
     steps:
       - name: Checkout
-        uses: actions/checkout@master
+        uses: actions/checkout@v4
+
       - name: Set version
         id: version
+        # Reads the version from the build/VERSION file
         run: echo "version=`cat build/VERSION`" >> $GITHUB_OUTPUT
+
       - name: Set repo
         id: repo
-        run: if [[ $GITHUB_REF == "refs/heads/master" ]]; then echo "repo=${DOCKER_REPO}" >> $GITHUB_OUTPUT; else echo "repo=${DOCKER_REPO_DEV}" >> $GITHUB_OUTPUT; fi
+        # Determines the Docker repository based on the branch
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
+            echo "repo=${DOCKER_REPO}" >> $GITHUB_OUTPUT
+          else
+            echo "repo=${DOCKER_REPO_DEV}" >> $GITHUB_OUTPUT
+          fi
+
       - name: Docker meta
         id: docker_meta
         uses: docker/metadata-action@v5
         with:
           images: ${{ steps.repo.outputs.repo }}
-      - name: Build image without push to registry
+          # Define the tags to be generated
+          tags: |
+            # Tag with the specific version from build/VERSION (e.g., 3.4.1)
+            type=raw,value=${{ steps.version.outputs.version }}
+            # Tag as 'latest' only if on the master branch
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/master' }}
+            # Tag with the branch name (e.g., 'master', 'dev')
+            type=ref,event=branch
+          # Define labels for image metadata
+          labels: |
+            org.opencontainers.image.version=${{ steps.version.outputs.version }}
+            org.opencontainers.image.source=https://github.com/enucatl/protonmail-bridge-docker
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
+            org.opencontainers.image.licenses=GPL-3.0-only
+
+      - name: Build image without push to registry (for scan)
+        # This step builds a local image for security scanning purposes
         uses: docker/build-push-action@v5
         with:
           context: ./build
           file: ./build/Dockerfile
-          push: true
+          push: true # Push to local registry service
           tags: localhost:5000/protonmail-bridge:latest
+
       - name: Scan image
         id: scan
         uses: anchore/scan-action@v3
@@ -54,30 +84,31 @@ jobs:
           image: localhost:5000/protonmail-bridge:latest
           fail-build: true
           severity-cutoff: critical
+
       - name: Inspect action SARIF report
         if: always()
         run: cat ${{ steps.scan.outputs.sarif }}
+
       - name: Upload Anchore scan SARIF report
-        if: always() && steps.scan.outcome != 'skipped' 
+        if: always() && steps.scan.outcome != 'skipped'
         uses: github/codeql-action/upload-sarif@v3
         with:
           sarif_file: ${{ steps.scan.outputs.sarif }}
+
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
-        if: ${{ github.event_name != 'pull_request' }}
+        if: ${{ github.event_name != 'pull_request' }} # Only login if not a PR
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Push image
         uses: docker/build-push-action@v5
+        if: ${{ github.event_name != 'pull_request' }} # Only push if not a PR
         with:
           context: ./build
           file: ./build/Dockerfile
-          platforms: ${{ env.PLATFORMS }}
-          tags: |
-            ${{ steps.repo.outputs.repo }}:build
-            ${{ steps.repo.outputs.repo }}:${{ steps.version.outputs.version }}-build
-            ${{ steps.docker_meta.outputs.tags }}
+          tags: ${{ steps.docker_meta.outputs.tags }}
           labels: ${{ steps.docker_meta.outputs.labels }}
-          push: ${{ github.event_name != 'pull_request' }}
+          push: true
