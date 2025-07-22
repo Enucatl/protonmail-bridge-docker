@@ -23,10 +23,10 @@ jobs:
         with:
           python-version: 3.13
 
-      - name: Install Python dependencies (if any)
+      - name: Install Python dependencies
         # Add any necessary pip installs for update-check.py if it uses non-standard libraries.
         # For 'requests' and 'json', they are usually built-in or common.
-        run: uv venv && uv pip install requests
+        run: uv venv && uv pip install -r requirements.txt
 
       - name: Run update check script
         # The script's first argument indicates if it's a pull request.
