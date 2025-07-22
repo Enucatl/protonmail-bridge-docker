@@ -1,0 +1,32 @@
+name: Redeploy Service
+
+on:
+  # Trigger 1: Runs when the 'Build and Push Image' workflow completes successfully on the main branch.
+  workflow_run:
+    workflows: ["Build and Push Image"]
+    types:
+      - completed
+    branches:
+      - main
+
+  # Trigger 2: Runs on a direct push to main that changes the docker-compose file.
+  push:
+    branches:
+      - main
+    paths:
+      - 'docker-compose.yml'
+
+jobs:
+  trigger-redeploy:
+    name: Trigger Portainer Webhook
+    # This condition ensures the job runs ONLY IF:
+    # - It was triggered by a successful workflow_run, OR
+    # - It was triggered by a direct push (the path and branch are already filtered by the 'on' block).
+    if: github.event.workflow_run.conclusion == 'success' || github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Call Portainer Webhook to redeploy
+        run: |
+          echo "Triggering Portainer redeployment..."
+          curl -s -X POST ${{ secrets.PORTAINER_WEBHOOK_URL }}
+          echo "Webhook triggered."

@@ -1,4 +1,4 @@
-name: build from source
+name: Build and Push Image
 
 on:
   push:
