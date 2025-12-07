@@ -1,30 +1,21 @@
 services:
   protonmail-bridge:
     image: ghcr.io/enucatl/protonmail-bridge:master
-    user: "8535:8535"
     build:
       context: ./build
       dockerfile: Dockerfile
-    container_name: pm_bridge
     restart: unless-stopped
     stdin_open: true 
     tty: true
     ports:
       - "10243:1243"
       - "10125:1125"
-    networks:
-      - traefik_proxy
     volumes:
-      - protonmail:/home/protonmail
-      - /nfs_exports/home/user/docker/traefik/data/certs/nuc10i7fnh.home.arpa/protonmail-bridge-privkey.pem:/home/protonmail/.config/protonmail/bridge-v3/key.pem:ro
-      - /nfs_exports/home/user/docker/traefik/data/certs/nuc10i7fnh.home.arpa/protonmail-bridge-fullchain.pem:/home/protonmail/.config/protonmail/bridge-v3/cert.pem:ro
+      - protonmail:/data
+      - /opt/docker/traefik/data/certs/docker_key.pem:/home/protonmail/.config/protonmail/bridge-v3/key.pem:ro
+      - /opt/docker/traefik/data/certs/docker_fullchain.pem:/home/protonmail/.config/protonmail/bridge-v3/cert.pem:ro
     labels:
       - "checkmk_monitor=true"
 
 volumes:
   protonmail:
-    name: protonmail
-
-networks:
-  traefik_proxy:
-    external: true

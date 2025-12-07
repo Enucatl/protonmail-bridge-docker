@@ -28,9 +28,23 @@ COPY --from=build /build/proton-bridge/bridge /protonmail/
 COPY --from=build /build/proton-bridge/proton-bridge /protonmail/
 COPY --from=build /build/proton-bridge/vault-editor /protonmail/
 
-# Add a user 'protonmail' with UID 8535
-RUN useradd -u 8535 -d /home/protonmail protonmail
-# change to non-privileged user for extra security
+# 1. Tell Bridge where to store config and data
+ENV XDG_CONFIG_HOME=/data/config
+ENV XDG_DATA_HOME=/data/data
+
+# 2. Tell GPG where to store keys
+ENV GNUPGHOME=/data/gpg
+
+# 3. Tell Pass where to store the password store
+ENV PASSWORD_STORE_DIR=/data/pass
+
+# Add a user 'protonmail'
+RUN useradd protonmail \
+    && mkdir -p /data/config /data/data/ /data/gpg /data/pass \
+    && chown -R protonmail:protonmail /data \
+    && chmod 700 /data/gpg
 USER protonmail
+VOLUME /data
+WORKDIR /home/protonmail
 
 ENTRYPOINT ["bash", "/protonmail/entrypoint.sh"]

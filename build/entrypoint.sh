@@ -3,8 +3,10 @@
 set -ex
 
 # Go to current user's homedir
-cd
-echo "Running as user '$USER' (UID '$UID') in '$PWD'"
+echo "Running as user '$(whoami)' (UID '$UID') in '$PWD'"
+mkdir -p $XDG_CONFIG_HOME $XDG_DATA_HOME $GNUPGHOME $PASSWORD_STORE_DIR
+pwd
+ls -la /data
 
 # Initialize
 if [[ $1 == init ]]; then
