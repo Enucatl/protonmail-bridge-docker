@@ -12,8 +12,8 @@ services:
       - "10125:1125"
     volumes:
       - protonmail:/data
-      - /opt/docker/traefik/data/certs/docker_key.pem:/home/protonmail/.config/protonmail/bridge-v3/key.pem:ro
-      - /opt/docker/traefik/data/certs/docker_fullchain.pem:/home/protonmail/.config/protonmail/bridge-v3/cert.pem:ro
+      - /opt/docker/traefik/data/certs/docker_key.pem:/data/config/protonmail/bridge-v3/key.pem:ro
+      - /opt/docker/traefik/data/certs/docker_fullchain.pem:/data/config/protonmail/bridge-v3/cert.pem:ro
     labels:
       - "checkmk_monitor=true"
 
