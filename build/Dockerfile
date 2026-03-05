@@ -2,7 +2,7 @@
 FROM ubuntu:latest AS build
 
 # Install dependencies
-RUN apt-get update && apt-get install -y git golang build-essential libsecret-1-dev
+RUN apt-get update && apt-get install -y git golang build-essential libsecret-1-dev libfido2-dev libcbor-dev pkg-config
 
 # Build
 WORKDIR /build/
@@ -17,7 +17,7 @@ EXPOSE 143/tcp
 
 # Install dependencies and protonmail bridge
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends dbus-x11 socat pass libsecret-1-0 ca-certificates \
+    && apt-get install -y --no-install-recommends dbus-x11 socat pass libsecret-1-0 ca-certificates libfido2-1 \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy bash scripts
