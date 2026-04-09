@@ -1,13 +1,15 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
-set -ex
+set -euo pipefail
 
-VERSION=`cat VERSION`
+VERSION="$(< VERSION)"
+ARCHIVE_URL="https://github.com/ProtonMail/proton-bridge/archive/refs/tags/v${VERSION}.tar.gz"
 
-# Clone new code
-git clone https://github.com/ProtonMail/proton-bridge.git
+curl -fsSL "${ARCHIVE_URL}" | tar -xz
+mv "proton-bridge-${VERSION}" proton-bridge
 cd proton-bridge
-git checkout v$VERSION
 
-# Build
-make build-nogui vault-editor
+export GOFLAGS="-trimpath"
+make build-nogui
+
+strip bridge proton-bridge

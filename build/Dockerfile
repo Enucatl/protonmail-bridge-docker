@@ -1,50 +1,62 @@
-# The build image could be golang, but it currently does not support riscv64. Only debian:sid does, at the time of writing.
-FROM ubuntu:latest AS build
+FROM golang:1.24-bookworm AS build
 
-# Install dependencies
-RUN apt-get update && apt-get install -y git golang build-essential libsecret-1-dev libfido2-dev libcbor-dev pkg-config
+ARG DEBIAN_FRONTEND=noninteractive
 
-# Build
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends build-essential ca-certificates curl libcbor-dev libfido2-dev libsecret-1-dev pkg-config \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /build/
 COPY build.sh VERSION /build/
 RUN bash build.sh
 
-FROM ubuntu:latest
-LABEL maintainer="Simon Felding <sife@adm.ku.dk>"
+FROM debian:13-slim
 
-EXPOSE 25/tcp
-EXPOSE 143/tcp
+ARG DEBIAN_FRONTEND=noninteractive
 
-# Install dependencies and protonmail bridge
+EXPOSE 1125/tcp
+EXPOSE 1243/tcp
+
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends dbus-x11 socat pass libsecret-1-0 ca-certificates libfido2-1 \
+    # Runtime dependency rationale:
+    # - bash: required by /protonmail/entrypoint.sh, and pass itself is a bash script.
+    # - ca-certificates: Bridge talks to Proton over TLS and needs the system trust store.
+    # - libfido2-1: the built bridge binary links to libfido2.so.1.
+    # - libsecret-1-0: the built bridge binary links to libsecret-1.so.0 for Linux
+    #   keychain support/probing, even when pass is the backend we actually use.
+    # - gnupg: pass shells out to gpg at runtime; install this explicitly so the real
+    #   runtime dependency is visible instead of being hidden as a transitive dependency.
+    # - pass: we checked proton-bridge's Linux keychain selection code
+    #   (pkg/keychain/helper_linux.go): the runtime backends are pass-app,
+    #   secret-service, and secret-service-dbus. For a standalone container,
+    #   Secret Service is the only alternative to pass, but it needs a working
+    #   DBus/secret-service stack and is more operationally complex than a
+    #   self-contained pass+GPG setup. Bridge uses pass as a real runtime
+    #   keychain backend, not just during bootstrap.
+    # - socat: Bridge listens on 127.0.0.1 internally, so we keep socat as the
+    #   compatibility shim that exposes IMAP and SMTP outside the container.
+    && apt-get install -y --no-install-recommends bash ca-certificates gnupg libfido2-1 libsecret-1-0 pass socat \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy bash scripts
-COPY gpgparams entrypoint.sh /protonmail/
+RUN install -d -m 755 /protonmail
 
-# Copy protonmail
-COPY --from=build /build/proton-bridge/bridge /protonmail/
-COPY --from=build /build/proton-bridge/proton-bridge /protonmail/
-COPY --from=build /build/proton-bridge/vault-editor /protonmail/
+COPY --chmod=644 gpgparams /protonmail/gpgparams
+COPY --chmod=755 entrypoint.sh /protonmail/entrypoint.sh
+COPY --from=build /build/proton-bridge/bridge /protonmail/bridge
 
-# 1. Tell Bridge where to store config and data
-ENV XDG_CONFIG_HOME=/data/config
-ENV XDG_DATA_HOME=/data/data
+ENV XDG_CONFIG_HOME=/data/config \
+    XDG_DATA_HOME=/data/data \
+    XDG_CACHE_HOME=/data/cache \
+    GNUPGHOME=/data/gpg
 
-# 2. Tell GPG where to store keys
-ENV GNUPGHOME=/data/gpg
+RUN useradd --create-home --home-dir /home/protonmail --shell /bin/bash protonmail \
+    && install -d -o protonmail -g protonmail /data \
+    && install -d -m 700 -o protonmail -g protonmail /data/cache /data/config /data/data /data/pass \
+    && install -d -m 700 -o protonmail -g protonmail /data/gpg
 
-# 3. Tell Pass where to store the password store
-ENV PASSWORD_STORE_DIR=/data/pass
-
-# Add a user 'protonmail'
-RUN useradd protonmail \
-    && mkdir -p /data/config /data/data/ /data/gpg /data/pass \
-    && chown -R protonmail:protonmail /data \
-    && chmod 700 /data/gpg
 USER protonmail
 VOLUME /data
 WORKDIR /home/protonmail
 
-ENTRYPOINT ["bash", "/protonmail/entrypoint.sh"]
+ENTRYPOINT ["/protonmail/entrypoint.sh"]
+CMD ["run"]

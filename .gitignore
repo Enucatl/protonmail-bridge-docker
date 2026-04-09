@@ -1,5 +1,6 @@
 .env
 *.swp
+test-credentials
 # Ignoring IDE-specific files
 .idea/*
 .vscode

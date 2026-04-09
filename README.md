@@ -3,6 +3,12 @@
 - Allow connecting with ipv6.
 - Changing configurations in `docker-compose.yml` to use my external network.
 - Publish my image to github with actions, only for amd64
+- Run Bridge noninteractively in steady state, while keeping `init` interactive.
+- Minimize the runtime image by shipping only the headless Bridge binary plus required runtime dependencies.
+- Reduce the image from roughly 194 MB to roughly 130 MB by removing the GUI launcher and `vault-editor`, stripping the shipped binary, and using a slimmer runtime base image.
+- Harden the default runtime by dropping Linux capabilities and enabling `no-new-privileges`.
+- Keep `pass` and GPG in the image intentionally: we checked the upstream Linux keychain code and `pass` is still the most practical self-contained backend for a container.
+- Keep `socat` intentionally: Bridge is still hardcoded to listen on `127.0.0.1`, so the container needs a forwarding shim to expose IMAP and SMTP externally.
 
 
 # ProtonMail IMAP/SMTP Bridge Docker Container
@@ -21,34 +27,31 @@ GitHub: [https://github.com/shenxn/protonmail-bridge-docker](https://github.com/
 
 ## Initialization
 
-To initialize and add account to the bridge, run the following command.
+Initialization is the only workflow that needs an interactive TTY. It creates the local `pass` store, starts the Bridge CLI, and lets you complete login and 2FA.
 
-```
+```bash
 docker compose build
-docker compose run -it protonmail-bridge init
+docker compose run --rm -it protonmail-bridge init
 ```
 
-If you want to use Docker Compose instead, you can create a copy of the provided example [docker-compose.yml](docker-compose.yml) file, modify it to suit your needs, and then run the following command:
-
-```
-docker compose run protonmail-bridge init
-```
-
-Wait for the bridge to startup, then you will see a prompt appear for [Proton Mail Bridge interactive shell](https://proton.me/support/bridge-cli-guide). Use the `login` command and follow the instructions to add your account into the bridge. Then use `info` to see the configuration information (username and password). After that, use `exit` to exit the bridge. You may need `CTRL+C` to exit the docker entirely.
+Wait for the bridge to startup, then you will see a prompt appear for [Proton Mail Bridge interactive shell](https://proton.me/support/bridge-cli-guide). Use the `login` command and follow the instructions to add your account into the bridge. Then use `info` to see the configuration information (username and password). After that, use `exit` to exit the bridge.
 
 ## Run
 
-To run the container, use the following command.
+After initialization, the service runs headlessly and no longer needs `tty` or `stdin_open`.
 
-```
-docker compose run --service-ports
-```
-
-Or, if using Docker Compose, use the following command.
-
-```
+```bash
 docker compose up -d
 ```
+
+The container starts `/protonmail/bridge --noninteractive` and uses `socat` to expose IMAP and SMTP over IPv6-capable listeners because Bridge itself binds only to `127.0.0.1`.
+
+## Runtime layout
+
+- Persistent state lives under `/data`.
+- Bridge config, cache, data, GPG home, and password store all live inside `/data`.
+- The example compose file drops all Linux capabilities and enables `no-new-privileges`.
+- The published ports map host `10125 -> 1125` for SMTP and `10243 -> 1243` for IMAP.
 
 ## Kubernetes
 
@@ -62,9 +65,10 @@ The initialization step exposes the bridge CLI so you can do things like switch 
 
 ## Build
 
-For anyone who want to build this container on your own (for development or security concerns), here is the guide to do so. First, you need to `cd` into the directory (`deb` or `build`, depending on which type of image you want). Then just run the docker build command
-```
-docker build .
+For anyone who wants to build this container on your own, the image is built from source in the `build/` directory and currently packages Proton Mail Bridge `3.23.1`.
+
+```bash
+docker build -t protonmail-bridge ./build
 ```
 
-That's it. The `Dockerfile` and bash scripts handle all the downloading, building, and packing. You can also add tags, push to your favorite docker registry, or use `buildx` to build multi architecture images.
+The Dockerfile downloads the tagged Bridge release archive, builds the headless binary, strips it, and copies only the runtime artifacts into the final image.

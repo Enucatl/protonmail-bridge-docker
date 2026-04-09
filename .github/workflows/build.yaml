@@ -1,9 +1,12 @@
 name: Build and Push Image
 
 on:
+  schedule:
+    # Keep code scanning results fresh even when there are no build/** changes.
+    - cron: '0 6 * * 1'
   push:
     branches:
-      - master
+      - main
       - dev
     paths:
       # Trigger when workflow file changes
@@ -15,6 +18,11 @@ on:
       - .github/workflows/build.yaml
       - build/**
   workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+  security-events: write
 
 env:
   DOCKER_REPO: ghcr.io/enucatl/protonmail-bridge
@@ -41,7 +49,7 @@ jobs:
         id: repo
         # Determines the Docker repository based on the branch
         run: |
-          if [[ "${{ github.ref }}" == "refs/heads/master" ]]; then
+          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
             echo "repo=${DOCKER_REPO}" >> $GITHUB_OUTPUT
           else
             echo "repo=${DOCKER_REPO_DEV}" >> $GITHUB_OUTPUT
@@ -54,11 +62,11 @@ jobs:
           images: ${{ steps.repo.outputs.repo }}
           # Define the tags to be generated
           tags: |
-            # Tag with the specific version from build/VERSION (e.g., 3.4.1)
+            # Tag with the packaged Proton Bridge version from build/VERSION.
             type=raw,value=${{ steps.version.outputs.version }}
-            # Tag as 'latest' only if on the master branch
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/master' }}
-            # Tag with the branch name (e.g., 'master', 'dev')
+            # Tag as latest only for the main branch.
+            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
+            # Tag with the branch name (e.g., main, dev) for branch-specific tracking.
             type=ref,event=branch
           # Define labels for image metadata
           labels: |

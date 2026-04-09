@@ -1,12 +1,15 @@
 services:
   protonmail-bridge:
-    image: ghcr.io/enucatl/protonmail-bridge:master
+    image: ghcr.io/enucatl/protonmail-bridge:3.23.1
     build:
       context: ./build
       dockerfile: Dockerfile
     restart: unless-stopped
-    stdin_open: true 
-    tty: true
+    command: ["run"]
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
     ports:
       - "10243:1243"
       - "10125:1125"
