@@ -2,7 +2,7 @@
 [![image](https://img.shields.io/badge/image-ghcr.io%2Fenucatl%2Fprotonmail--bridge-2496ED?logo=docker&logoColor=white)](https://github.com/Enucatl/protonmail-bridge-docker/pkgs/container/protonmail-bridge)
 [![latest tag](https://ghcr-badge.egpl.dev/enucatl/protonmail-bridge/latest_tag?trim=major&label=latest&color=%232496ED)](https://github.com/Enucatl/protonmail-bridge-docker/pkgs/container/protonmail-bridge)
 [![image size](https://ghcr-badge.egpl.dev/enucatl/protonmail-bridge/size?tag=latest&label=image%20size&color=%232496ED)](https://github.com/Enucatl/protonmail-bridge-docker/pkgs/container/protonmail-bridge)
-[![downloads](https://ghcr-badge.elias.eu.org/shield/Enucatl/protonmail-bridge-docker/protonmail-bridge)](https://github.com/Enucatl/protonmail-bridge-docker/pkgs/container/protonmail-bridge)
+[![downloads](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fghcr-badge.elias.eu.org%2Fapi%2FEnucatl%2Fprotonmail-bridge-docker%2Fprotonmail-bridge&query=downloadCount&label=docker%20pulls&color=2496ED&logo=docker&logoColor=white)](https://github.com/Enucatl/protonmail-bridge-docker/pkgs/container/protonmail-bridge)
 [![bridge version](https://img.shields.io/badge/bridge-3.23.1-6D4AFF?logo=protonmail&logoColor=white)](https://github.com/Enucatl/protonmail-bridge-docker/blob/main/build/VERSION)
 [![build](https://img.shields.io/github/actions/workflow/status/Enucatl/protonmail-bridge-docker/build.yaml?branch=main&label=build)](https://github.com/Enucatl/protonmail-bridge-docker/actions/workflows/build.yaml)
 [![scan](https://img.shields.io/badge/scan-Trivy-1904DA?logo=trivy&logoColor=white)](https://github.com/Enucatl/protonmail-bridge-docker/actions/workflows/build.yaml)
