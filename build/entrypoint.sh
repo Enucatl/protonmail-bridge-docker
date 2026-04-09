@@ -56,6 +56,7 @@ has_custom_tls_certs() {
 
 import_tls_certs() {
     if ! has_custom_tls_certs; then
+        # Keep startup non-fatal when the optional external TLS cert mount is absent.
         echo "No readable custom Bridge TLS certificate found at ${BRIDGE_TLS_CERT_PATH} and ${BRIDGE_TLS_KEY_PATH}; skipping import." >&2
         return 0
     fi
