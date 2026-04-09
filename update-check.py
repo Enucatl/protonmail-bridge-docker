@@ -1,6 +1,7 @@
 import json
 import os
 import re
+import subprocess
 import sys
 
 import requests
@@ -29,23 +30,25 @@ def check_version(directory, new_version):
         # bump up to new release
         with open(f"{directory}/VERSION", "w") as f:
             f.write(new_version)
-        # commit
-        result = os.system(
-            f"git config --local user.email 'actions@github.com' \
-            && git config --local user.name 'GitHub Actions' \
-            && git add {directory}/VERSION \
-            && git commit -m 'Bump {directory} version to {new_version}'"
+
+        subprocess.run(
+            ["git", "config", "--local", "user.email", "actions@github.com"],
+            check=True,
         )
-        if result != 0:
-            print("Failed to commit the bump. Exiting")
-            exit(1)
+        subprocess.run(
+            ["git", "config", "--local", "user.name", "GitHub Actions"],
+            check=True,
+        )
+        subprocess.run(["git", "add", f"{directory}/VERSION"], check=True)
+        subprocess.run(
+            ["git", "commit", "-m", f"Bump {directory} version to {new_version}"],
+            check=True,
+        )
+
         if is_pull_request:
             print("Action triggered by pull request. Do not push.")
         else:
-            result = os.system("git push")
-            if result != 0:
-                print("Failed to push. Exiting")
-                exit(1)
+            subprocess.run(["git", "push"], check=True)
     else:
         print(f"Already newest version {old_version}")
 
@@ -54,8 +57,12 @@ def check_version(directory, new_version):
 response = requests.get(
     "https://api.github.com/repos/ProtonMail/proton-bridge/tags",
     headers={"Accept": "application/vnd.github.v3+json"},
+    timeout=30,
 )
+response.raise_for_status()
 tags = json.loads(response.content)
 version_re = re.compile(r"v\d+\.\d+\.\d+")
 releases = [tag["name"][1:] for tag in tags if version_re.match(tag["name"])]
+if not releases:
+    raise RuntimeError("No matching releases returned from the Proton Bridge tags API")
 check_version("build", releases[0])

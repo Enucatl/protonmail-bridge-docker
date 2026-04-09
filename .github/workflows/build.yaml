@@ -38,12 +38,16 @@ jobs:
           - 5000:5000
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set version
         id: version
         # Reads the version from the build/VERSION file
-        run: echo "version=`cat build/VERSION`" >> $GITHUB_OUTPUT
+        run: echo "version=$(cat build/VERSION)" >> "$GITHUB_OUTPUT"
+
+      - name: Set image created timestamp
+        id: created
+        run: echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
 
       - name: Set repo
         id: repo
@@ -57,7 +61,7 @@ jobs:
 
       - name: Docker meta
         id: docker_meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: ${{ steps.repo.outputs.repo }}
           # Define the tags to be generated
@@ -73,12 +77,12 @@ jobs:
             org.opencontainers.image.version=${{ steps.version.outputs.version }}
             org.opencontainers.image.source=https://github.com/enucatl/protonmail-bridge-docker
             org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.created=${{ github.event.head_commit.timestamp }}
+            org.opencontainers.image.created=${{ steps.created.outputs.timestamp }}
             org.opencontainers.image.licenses=GPL-3.0-only
 
       - name: Build image without push to registry (for scan)
         # This step builds a local image for security scanning purposes
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         with:
           context: ./build
           file: ./build/Dockerfile
@@ -87,7 +91,7 @@ jobs:
 
       - name: Scan image
         id: scan
-        uses: anchore/scan-action@v3
+        uses: anchore/scan-action@v7
         with:
           image: localhost:5000/protonmail-bridge:latest
           fail-build: false
@@ -97,14 +101,25 @@ jobs:
         if: always()
         run: cat ${{ steps.scan.outputs.sarif }}
 
-      - name: Upload Anchore scan SARIF report
+      - name: Validate SARIF report
+        id: sarif
         if: always() && steps.scan.outcome != 'skipped'
-        uses: github/codeql-action/upload-sarif@v3
+        run: |
+          if jq empty "${{ steps.scan.outputs.sarif }}" >/dev/null 2>&1; then
+            echo "valid=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "valid=false" >> "$GITHUB_OUTPUT"
+            echo "Anchore produced invalid SARIF; skipping upload."
+          fi
+
+      - name: Upload Anchore scan SARIF report
+        if: always() && steps.scan.outcome != 'skipped' && steps.sarif.outputs.valid == 'true'
+        uses: github/codeql-action/upload-sarif@v4
         with:
           sarif_file: ${{ steps.scan.outputs.sarif }}
 
       - name: Login to GitHub Container Registry
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         if: ${{ github.event_name != 'pull_request' }} # Only login if not a PR
         with:
           registry: ghcr.io
@@ -112,7 +127,7 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v7
         if: ${{ github.event_name != 'pull_request' }} # Only push if not a PR
         with:
           context: ./build
