@@ -29,12 +29,22 @@ GitHub: [https://github.com/shenxn/protonmail-bridge-docker](https://github.com/
 
 Initialization is the only workflow that needs an interactive TTY. It creates the local `pass` store, starts the Bridge CLI, and lets you complete login and 2FA.
 
+The Compose file includes a dedicated `protonmail-bridge-init` service behind the `init` profile. It mounts only `/data` plus the external TLS certificate files. The certs are mounted at `/protonmail/certs` and then imported into Bridge's vault on exit from the interactive CLI; Bridge does not automatically use `cert.pem` and `key.pem` just because they exist under the config directory.
+
 ```bash
 docker compose build
-docker compose run --rm -it protonmail-bridge init
+docker compose --profile init run --rm protonmail-bridge-init
 ```
 
 Wait for the bridge to startup, then you will see a prompt appear for [Proton Mail Bridge interactive shell](https://proton.me/support/bridge-cli-guide). Use the `login` command and follow the instructions to add your account into the bridge. Then use `info` to see the configuration information (username and password). After that, use `exit` to exit the bridge.
+
+When the CLI exits successfully, the entrypoint runs `cert import` automatically using `/protonmail/certs/cert.pem` and `/protonmail/certs/key.pem`, then stores those file paths in `vault.enc`. If you add or rotate certificates after the initial setup, rerun:
+
+```bash
+docker compose stop protonmail-bridge
+docker compose --profile init run --rm protonmail-bridge-init import-certs
+docker compose up -d
+```
 
 ## Run
 
@@ -50,6 +60,7 @@ The container starts `/protonmail/bridge --noninteractive` and uses `socat` to e
 
 - Persistent state lives under `/data`.
 - Bridge config, cache, data, GPG home, and password store all live inside `/data`.
+- The external TLS certificate and key are bind-mounted at `/protonmail/certs/{cert,key}.pem` and referenced from the Bridge vault after `cert import`.
 - The example compose file drops all Linux capabilities and enables `no-new-privileges`.
 - The published ports map host `10125 -> 1125` for SMTP and `10243 -> 1243` for IMAP.
 

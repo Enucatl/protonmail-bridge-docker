@@ -3,6 +3,8 @@
 set -euo pipefail
 
 readonly BRIDGE_BIN="/protonmail/bridge"
+readonly BRIDGE_TLS_CERT_PATH="${BRIDGE_TLS_CERT_PATH:-/protonmail/certs/cert.pem}"
+readonly BRIDGE_TLS_KEY_PATH="${BRIDGE_TLS_KEY_PATH:-/protonmail/certs/key.pem}"
 SOCAT_SMTP_PID=""
 SOCAT_IMAP_PID=""
 BRIDGE_PID=""
@@ -48,6 +50,22 @@ ensure_pass_store() {
     fi
 }
 
+has_custom_tls_certs() {
+    [[ -r "${BRIDGE_TLS_CERT_PATH}" && -r "${BRIDGE_TLS_KEY_PATH}" ]]
+}
+
+import_tls_certs() {
+    if ! has_custom_tls_certs; then
+        echo "No readable custom Bridge TLS certificate found at ${BRIDGE_TLS_CERT_PATH} and ${BRIDGE_TLS_KEY_PATH}; skipping import." >&2
+        return 0
+    fi
+
+    printf 'cert import\n%s\n%s\nexit\n' \
+        "${BRIDGE_TLS_CERT_PATH}" \
+        "${BRIDGE_TLS_KEY_PATH}" \
+        | "${BRIDGE_BIN}" --cli "$@"
+}
+
 run_mode() {
     trap cleanup EXIT
     trap forward_signal INT TERM
@@ -73,7 +91,19 @@ run_mode() {
 
 init_mode() {
     ensure_pass_store
-    exec "${BRIDGE_BIN}" --cli "$@"
+    "${BRIDGE_BIN}" --cli "$@"
+    local status=$?
+
+    if [[ "${status}" -eq 0 ]]; then
+        import_tls_certs
+    fi
+
+    return "${status}"
+}
+
+import_certs_mode() {
+    ensure_pass_store
+    import_tls_certs "$@"
 }
 
 prepare_state
@@ -82,6 +112,10 @@ case "${1:-run}" in
     init)
         shift
         init_mode "$@"
+        ;;
+    import-certs)
+        shift
+        import_certs_mode "$@"
         ;;
     run)
         shift
