@@ -13,11 +13,11 @@
 
 # ProtonMail IMAP/SMTP Bridge Docker Container
 
-![version badge](https://img.shields.io/docker/v/shenxn/protonmail-bridge)
-![image size badge](https://img.shields.io/docker/image-size/shenxn/protonmail-bridge/build)
-![docker pulls badge](https://img.shields.io/docker/pulls/shenxn/protonmail-bridge)
-![deb badge](https://github.com/shenxn/protonmail-bridge-docker/workflows/pack%20from%20deb/badge.svg)
-![build badge](https://github.com/shenxn/protonmail-bridge-docker/workflows/build%20from%20source/badge.svg)
+[![image](https://img.shields.io/badge/image-ghcr.io%2Fenucatl%2Fprotonmail--bridge-2496ED?logo=docker&logoColor=white)](https://github.com/Enucatl/protonmail-bridge-docker/pkgs/container/protonmail-bridge)
+[![bridge version](https://img.shields.io/badge/bridge-3.23.1-6D4AFF?logo=protonmail&logoColor=white)](https://github.com/Enucatl/protonmail-bridge-docker/blob/main/build/VERSION)
+[![build](https://img.shields.io/github/actions/workflow/status/Enucatl/protonmail-bridge-docker/build.yaml?branch=main&label=build)](https://github.com/Enucatl/protonmail-bridge-docker/actions/workflows/build.yaml)
+[![scan](https://img.shields.io/badge/scan-Trivy-1904DA?logo=trivy&logoColor=white)](https://github.com/Enucatl/protonmail-bridge-docker/actions/workflows/build.yaml)
+[![security](https://img.shields.io/badge/vulnerabilities-GitHub%20Security-2EA44F?logo=github&logoColor=white)](https://github.com/Enucatl/protonmail-bridge-docker/security/code-scanning)
 
 This is an unofficial Docker container of the [ProtonMail Bridge](https://protonmail.com/bridge/). Some of the scripts are based on [Hendrik Meyer's work](https://gitlab.com/T4cC0re/protonmail-bridge-docker).
 
