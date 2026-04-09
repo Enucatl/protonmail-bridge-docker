@@ -1,7 +1,7 @@
 # What is this fork about?
 [![image](https://img.shields.io/badge/image-ghcr.io%2Fenucatl%2Fprotonmail--bridge-2496ED?logo=docker&logoColor=white)](https://github.com/Enucatl/protonmail-bridge-docker/pkgs/container/protonmail-bridge)
 [![latest tag](https://ghcr-badge.egpl.dev/enucatl/protonmail-bridge/latest_tag?trim=major&label=latest&color=%232496ED)](https://github.com/Enucatl/protonmail-bridge-docker/pkgs/container/protonmail-bridge)
-[![image size](https://ghcr-badge.egpl.dev/enucatl/protonmail-bridge/size?tag=latest&label=image%20size&color=%232496ED)](https://github.com/Enucatl/protonmail-bridge-docker/pkgs/container/protonmail-bridge)
+[![image size](https://img.shields.io/badge/image%20size-~141%20MB-2496ED)](https://github.com/Enucatl/protonmail-bridge-docker/blob/main/README.md)
 [![downloads](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fghcr-badge.elias.eu.org%2Fapi%2FEnucatl%2Fprotonmail-bridge-docker%2Fprotonmail-bridge&query=downloadCount&label=docker%20pulls&color=2496ED&logo=docker&logoColor=white)](https://github.com/Enucatl/protonmail-bridge-docker/pkgs/container/protonmail-bridge)
 [![bridge version](https://img.shields.io/badge/bridge-3.23.1-6D4AFF?logo=protonmail&logoColor=white)](https://github.com/Enucatl/protonmail-bridge-docker/blob/main/build/VERSION)
 [![build](https://img.shields.io/github/actions/workflow/status/Enucatl/protonmail-bridge-docker/build.yaml?branch=main&label=build)](https://github.com/Enucatl/protonmail-bridge-docker/actions/workflows/build.yaml)
@@ -11,7 +11,7 @@
 
 - Run Bridge noninteractively in steady state, while keeping `init` interactive.
 - Minimize the runtime image by shipping only the headless Bridge binary plus required runtime dependencies.
-- Reduce the image from roughly 194 MB to roughly 130 MB by removing the GUI launcher and `vault-editor`, stripping the shipped binary, and using a slimmer runtime base image.
+- Reduce the image from 194 MB by removing the GUI launcher and `vault-editor`, stripping the shipped binary, and using a slimmer runtime base image.
 - Harden the default runtime by dropping Linux capabilities and enabling `no-new-privileges`.
 - Keep `pass` and GPG in the image intentionally: we checked the upstream Linux keychain code and `pass` is still the most practical self-contained backend for a container.
 - Keep `socat` intentionally: Bridge is still hardcoded to listen on `127.0.0.1`, so the container needs a forwarding shim to expose IMAP and SMTP externally.
