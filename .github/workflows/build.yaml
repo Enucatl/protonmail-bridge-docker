@@ -31,11 +31,6 @@ env:
 jobs:
   build:
     runs-on: ubuntu-latest
-    services:
-      registry:
-        image: registry:2
-        ports:
-          - 5000:5000
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -80,43 +75,54 @@ jobs:
             org.opencontainers.image.created=${{ steps.created.outputs.timestamp }}
             org.opencontainers.image.licenses=GPL-3.0-only
 
-      - name: Build image without push to registry (for scan)
-        # This step builds a local image for security scanning purposes
+      - name: Build image for scan
         uses: docker/build-push-action@v7
         with:
           context: ./build
           file: ./build/Dockerfile
-          push: true # Push to local registry service
-          tags: localhost:5000/protonmail-bridge:latest
+          load: true
+          tags: protonmail-bridge:scan
 
-      - name: Scan image
-        id: scan
-        uses: anchore/scan-action@v7
+      - name: Scan image with Trivy
+        uses: aquasecurity/trivy-action@v0.35.0
         with:
-          image: localhost:5000/protonmail-bridge:latest
-          fail-build: false
-          severity-cutoff: critical
+          image-ref: protonmail-bridge:scan
+          format: table
+          exit-code: '0'
+          ignore-unfixed: true
+          vuln-type: os,library
+          scanners: vuln
+          severity: CRITICAL,HIGH
 
-      - name: Inspect action SARIF report
-        if: always()
-        run: cat ${{ steps.scan.outputs.sarif }}
+      - name: Generate Trivy SARIF report
+        uses: aquasecurity/trivy-action@v0.35.0
+        with:
+          image-ref: protonmail-bridge:scan
+          format: sarif
+          output: trivy-results.sarif
+          exit-code: '0'
+          ignore-unfixed: true
+          vuln-type: os,library
+          scanners: vuln
+          severity: CRITICAL,HIGH
+          limit-severities-for-sarif: true
 
       - name: Validate SARIF report
         id: sarif
-        if: always() && steps.scan.outcome != 'skipped'
+        if: always()
         run: |
-          if jq empty "${{ steps.scan.outputs.sarif }}" >/dev/null 2>&1; then
+          if jq empty trivy-results.sarif >/dev/null 2>&1; then
             echo "valid=true" >> "$GITHUB_OUTPUT"
           else
             echo "valid=false" >> "$GITHUB_OUTPUT"
-            echo "Anchore produced invalid SARIF; skipping upload."
+            echo "Trivy produced invalid SARIF; skipping upload."
           fi
 
-      - name: Upload Anchore scan SARIF report
-        if: always() && steps.scan.outcome != 'skipped' && steps.sarif.outputs.valid == 'true'
+      - name: Upload Trivy SARIF report
+        if: always() && steps.sarif.outputs.valid == 'true'
         uses: github/codeql-action/upload-sarif@v4
         with:
-          sarif_file: ${{ steps.scan.outputs.sarif }}
+          sarif_file: trivy-results.sarif
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v4
