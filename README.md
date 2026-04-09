@@ -1,4 +1,13 @@
 # What is this fork about?
+[![image](https://img.shields.io/badge/image-ghcr.io%2Fenucatl%2Fprotonmail--bridge-2496ED?logo=docker&logoColor=white)](https://github.com/Enucatl/protonmail-bridge-docker/pkgs/container/protonmail-bridge)
+[![latest tag](https://ghcr-badge.egpl.dev/enucatl/protonmail-bridge/latest_tag?trim=major&label=latest&color=%232496ED)](https://github.com/Enucatl/protonmail-bridge-docker/pkgs/container/protonmail-bridge)
+[![image size](https://ghcr-badge.egpl.dev/enucatl/protonmail-bridge/size?tag=latest&label=image%20size&color=%232496ED)](https://github.com/Enucatl/protonmail-bridge-docker/pkgs/container/protonmail-bridge)
+[![downloads](https://ghcr-badge.elias.eu.org/shield/Enucatl/protonmail-bridge-docker/protonmail-bridge)](https://github.com/Enucatl/protonmail-bridge-docker/pkgs/container/protonmail-bridge)
+[![bridge version](https://img.shields.io/badge/bridge-3.23.1-6D4AFF?logo=protonmail&logoColor=white)](https://github.com/Enucatl/protonmail-bridge-docker/blob/main/build/VERSION)
+[![build](https://img.shields.io/github/actions/workflow/status/Enucatl/protonmail-bridge-docker/build.yaml?branch=main&label=build)](https://github.com/Enucatl/protonmail-bridge-docker/actions/workflows/build.yaml)
+[![scan](https://img.shields.io/badge/scan-Trivy-1904DA?logo=trivy&logoColor=white)](https://github.com/Enucatl/protonmail-bridge-docker/actions/workflows/build.yaml)
+[![security](https://img.shields.io/badge/vulnerabilities-GitHub%20Security-2EA44F?logo=github&logoColor=white)](https://github.com/Enucatl/protonmail-bridge-docker/security/code-scanning)
+
 
 - Run Bridge noninteractively in steady state, while keeping `init` interactive.
 - Minimize the runtime image by shipping only the headless Bridge binary plus required runtime dependencies.
@@ -13,19 +22,8 @@
 
 # ProtonMail IMAP/SMTP Bridge Docker Container
 
-[![image](https://img.shields.io/badge/image-ghcr.io%2Fenucatl%2Fprotonmail--bridge-2496ED?logo=docker&logoColor=white)](https://github.com/Enucatl/protonmail-bridge-docker/pkgs/container/protonmail-bridge)
-[![latest tag](https://ghcr-badge.egpl.dev/enucatl/protonmail-bridge/latest_tag?trim=major&label=latest&color=%232496ED)](https://github.com/Enucatl/protonmail-bridge-docker/pkgs/container/protonmail-bridge)
-[![image size](https://ghcr-badge.egpl.dev/enucatl/protonmail-bridge/size?tag=latest&label=image%20size&color=%232496ED)](https://github.com/Enucatl/protonmail-bridge-docker/pkgs/container/protonmail-bridge)
-[![bridge version](https://img.shields.io/badge/bridge-3.23.1-6D4AFF?logo=protonmail&logoColor=white)](https://github.com/Enucatl/protonmail-bridge-docker/blob/main/build/VERSION)
-[![build](https://img.shields.io/github/actions/workflow/status/Enucatl/protonmail-bridge-docker/build.yaml?branch=main&label=build)](https://github.com/Enucatl/protonmail-bridge-docker/actions/workflows/build.yaml)
-[![scan](https://img.shields.io/badge/scan-Trivy-1904DA?logo=trivy&logoColor=white)](https://github.com/Enucatl/protonmail-bridge-docker/actions/workflows/build.yaml)
-[![security](https://img.shields.io/badge/vulnerabilities-GitHub%20Security-2EA44F?logo=github&logoColor=white)](https://github.com/Enucatl/protonmail-bridge-docker/security/code-scanning)
-
 This is an unofficial Docker container of the [ProtonMail Bridge](https://protonmail.com/bridge/). Some of the scripts are based on [Hendrik Meyer's work](https://gitlab.com/T4cC0re/protonmail-bridge-docker).
-
-Docker Hub: [https://hub.docker.com/r/shenxn/protonmail-bridge](https://hub.docker.com/r/shenxn/protonmail-bridge)
-
-GitHub: [https://github.com/shenxn/protonmail-bridge-docker](https://github.com/shenxn/protonmail-bridge-docker)
+Further developed by shexn here: [https://github.com/shenxn/protonmail-bridge-docker](https://github.com/shenxn/protonmail-bridge-docker).
 
 ## Initialization
 
@@ -40,7 +38,10 @@ docker compose --profile init run --rm protonmail-bridge-init
 
 Wait for the bridge to startup, then you will see a prompt appear for [Proton Mail Bridge interactive shell](https://proton.me/support/bridge-cli-guide). Use the `login` command and follow the instructions to add your account into the bridge. Then use `info` to see the configuration information (username and password). After that, use `exit` to exit the bridge.
 
-When the CLI exits successfully, the entrypoint runs `cert import` automatically using `/protonmail/certs/cert.pem` and `/protonmail/certs/key.pem`, then stores those file paths in `vault.enc`. If you add or rotate certificates after the initial setup, rerun:
+## Add custom certificates
+
+When the CLI exits successfully, the entrypoint runs `cert import` automatically using `/protonmail/certs/cert.pem` and `/protonmail/certs/key.pem`, then stores those file paths in `vault.enc`.
+If you add or rotate certificates after the initial setup, rerun:
 
 ```bash
 docker compose stop protonmail-bridge
