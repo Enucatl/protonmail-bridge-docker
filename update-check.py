@@ -63,16 +63,30 @@ def github_headers():
     return headers
 
 
+def latest_full_release_version():
+    response = requests.get(
+        "https://api.github.com/repos/ProtonMail/proton-bridge/releases",
+        headers=github_headers(),
+        params={"per_page": 10},
+        timeout=30,
+    )
+    response.raise_for_status()
+
+    version_re = re.compile(r"v\d+\.\d+\.\d+")
+    releases = [
+        release["tag_name"][1:]
+        for release in response.json()
+        if not release.get("draft")
+        and not release.get("prerelease")
+        and version_re.fullmatch(release.get("tag_name", ""))
+    ]
+    if not releases:
+        raise RuntimeError(
+            "No matching full releases returned from the Proton Bridge releases API"
+        )
+
+    return releases[0]
+
+
 # check build version
-response = requests.get(
-    "https://api.github.com/repos/ProtonMail/proton-bridge/tags",
-    headers=github_headers(),
-    timeout=30,
-)
-response.raise_for_status()
-tags = response.json()
-version_re = re.compile(r"v\d+\.\d+\.\d+")
-releases = [tag["name"][1:] for tag in tags if version_re.match(tag["name"])]
-if not releases:
-    raise RuntimeError("No matching releases returned from the Proton Bridge tags API")
-check_version("build", releases[0])
+check_version("build", latest_full_release_version())
