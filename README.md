@@ -86,3 +86,7 @@ docker build -t protonmail-bridge ./build
 ```
 
 The Dockerfile downloads the tagged Bridge release archive, builds the headless binary, strips it, and copies only the runtime artifacts into the final image.
+
+## Security baseline
+
+This compose project uses the shared [docker-compose-security-baseline](https://github.com/Enucatl/docker-compose-security-baseline) for common container hardening defaults, including capabilities, no-new-privileges, memory/swap, and PID limits.

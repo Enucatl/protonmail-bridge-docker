@@ -1,15 +1,14 @@
 services:
   protonmail-bridge:
+    extends:
+      file: ../compose-security-baseline/hardening.yml
+      service: hardened-medium
     image: ghcr.io/enucatl/protonmail-bridge:3.23.1
     build:
       context: ./build
       dockerfile: Dockerfile
     restart: unless-stopped
     command: ["run"]
-    cap_drop:
-      - ALL
-    security_opt:
-      - no-new-privileges:true
     ports:
       - "10243:1243"
       - "10125:1125"
@@ -21,6 +20,9 @@ services:
       - "checkmk_monitor=true"
 
   protonmail-bridge-init:
+    extends:
+      file: ../compose-security-baseline/hardening.yml
+      service: hardened-medium
     image: ghcr.io/enucatl/protonmail-bridge:3.23.1
     build:
       context: ./build
