@@ -30,4 +30,6 @@ jobs:
         run: uv venv && uv pip install -r requirements.txt
 
       - name: Run update check script
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: uv run python update-check.py false

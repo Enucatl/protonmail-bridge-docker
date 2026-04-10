@@ -1,4 +1,3 @@
-import json
 import os
 import re
 import subprocess
@@ -53,14 +52,25 @@ def check_version(directory, new_version):
         print(f"Already newest version {old_version}")
 
 
+def github_headers():
+    headers = {
+        "Accept": "application/vnd.github.v3+json",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+    token = os.environ.get("GITHUB_TOKEN") or os.environ.get("GH_TOKEN")
+    if token:
+        headers["Authorization"] = f"Bearer {token}"
+    return headers
+
+
 # check build version
 response = requests.get(
     "https://api.github.com/repos/ProtonMail/proton-bridge/tags",
-    headers={"Accept": "application/vnd.github.v3+json"},
+    headers=github_headers(),
     timeout=30,
 )
 response.raise_for_status()
-tags = json.loads(response.content)
+tags = response.json()
 version_re = re.compile(r"v\d+\.\d+\.\d+")
 releases = [tag["name"][1:] for tag in tags if version_re.match(tag["name"])]
 if not releases:
