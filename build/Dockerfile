@@ -17,6 +17,9 @@ ARG DEBIAN_FRONTEND=noninteractive
 EXPOSE 1125/tcp
 EXPOSE 1243/tcp
 
+HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
+    CMD timeout 5 bash -c 'exec 3<>/dev/tcp/localhost/1125 && exec 4<>/dev/tcp/localhost/1243 || exit 1' || exit 1
+
 RUN apt-get update \
     # Runtime dependency rationale:
     # - bash: required by /protonmail/entrypoint.sh, and pass itself is a bash script.

@@ -9,15 +9,16 @@
 [![security](https://img.shields.io/badge/vulnerabilities-GitHub%20Security-2EA44F?logo=github&logoColor=white)](https://github.com/Enucatl/protonmail-bridge-docker/security/code-scanning)
 
 
-- Run Bridge noninteractively in steady state, while keeping `init` interactive.
-- Minimize the runtime image by shipping only the headless Bridge binary plus required runtime dependencies.
-- Reduce the image from 194 MB by removing the GUI launcher and `vault-editor`, stripping the shipped binary, and using a slimmer runtime base image.
-- Harden the default runtime by dropping Linux capabilities and enabling `no-new-privileges`.
-- Keep `pass` and GPG in the image intentionally: we checked the upstream Linux keychain code and `pass` is still the most practical self-contained backend for a container.
-- Keep `socat` intentionally: Bridge is still hardcoded to listen on `127.0.0.1`, so the container needs a forwarding shim to expose IMAP and SMTP externally.
-- Allow connecting with ipv6.
-- Changing configurations in `docker-compose.yml` to use my external network.
+- Run Bridge noninteractively in steady state, while keeping `init` interactive
+- Minimize the runtime image by shipping only the headless Bridge binary plus required runtime dependencies
+- Reduce the image from 194 MB by removing the GUI launcher and `vault-editor`, stripping the shipped binary, and using a slimmer runtime base image
+- Harden the default runtime by dropping Linux capabilities and enabling `no-new-privileges`
+- Keep `pass` and GPG in the image intentionally: we checked the upstream Linux keychain code and `pass` is still the most practical self-contained backend for a container
+- Keep `socat` intentionally: Bridge is still hardcoded to listen on `127.0.0.1`, so the container needs a forwarding shim to expose IMAP and SMTP externally
+- Allow connecting with ipv6
+- Changing configurations in `docker-compose.yml` to use my external network
 - Publish my image to github with actions, only for amd64
+- Add a healthcheck
 
 
 # ProtonMail IMAP/SMTP Bridge Docker Container
