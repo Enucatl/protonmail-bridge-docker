@@ -1,4 +1,4 @@
-FROM golang:1.24-bookworm AS build
+FROM golang:1.26.1-trixie AS build
 
 ARG DEBIAN_FRONTEND=noninteractive
 
