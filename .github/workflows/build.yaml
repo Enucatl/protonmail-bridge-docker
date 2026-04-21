@@ -9,9 +9,7 @@ on:
       - main
       - dev
     paths:
-      # Trigger when workflow file changes
       - .github/workflows/build.yaml
-      # Trigger when any file in the 'build' directory changes (including VERSION)
       - build/**
   pull_request:
     paths:
@@ -21,123 +19,60 @@ on:
 
 permissions:
   contents: read
-  packages: write
-  security-events: write
-
-env:
-  DOCKER_REPO: ghcr.io/enucatl/protonmail-bridge
-  DOCKER_REPO_DEV: ghcr.io/enucatl/protonmail-bridge-dev
 
 jobs:
-  build:
+  prepare:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      meta_tags: ${{ steps.tags.outputs.meta_tags }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
 
       - name: Set version
         id: version
-        # Reads the version from the build/VERSION file
-        run: echo "version=$(cat build/VERSION)" >> "$GITHUB_OUTPUT"
-
-      - name: Set image created timestamp
-        id: created
-        run: echo "timestamp=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$GITHUB_OUTPUT"
-
-      - name: Set repo
-        id: repo
-        # Determines the Docker repository based on the branch
+        shell: bash
         run: |
-          if [[ "${{ github.ref }}" == "refs/heads/main" ]]; then
-            echo "repo=${DOCKER_REPO}" >> $GITHUB_OUTPUT
-          else
-            echo "repo=${DOCKER_REPO_DEV}" >> $GITHUB_OUTPUT
-          fi
+          set -euo pipefail
+          echo "version=$(cat build/VERSION)" >> "$GITHUB_OUTPUT"
 
-      - name: Docker meta
-        id: docker_meta
-        uses: docker/metadata-action@v6
-        with:
-          images: ${{ steps.repo.outputs.repo }}
-          # Define the tags to be generated
-          tags: |
-            # Tag with the packaged Proton Bridge version from build/VERSION.
-            type=raw,value=${{ steps.version.outputs.version }}
-            # Tag as latest only for the main branch.
-            type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
-            # Tag with the branch name (e.g., main, dev) for branch-specific tracking.
-            type=ref,event=branch
-          # Define labels for image metadata
-          labels: |
-            org.opencontainers.image.version=${{ steps.version.outputs.version }}
-            org.opencontainers.image.source=https://github.com/enucatl/protonmail-bridge-docker
-            org.opencontainers.image.revision=${{ github.sha }}
-            org.opencontainers.image.created=${{ steps.created.outputs.timestamp }}
-            org.opencontainers.image.licenses=GPL-3.0-only
-
-      - name: Build image for scan
-        uses: docker/build-push-action@v7
-        with:
-          context: ./build
-          file: ./build/Dockerfile
-          load: true
-          tags: protonmail-bridge:scan
-
-      - name: Scan image with Trivy
-        uses: aquasecurity/trivy-action@v0.35.0
-        with:
-          image-ref: protonmail-bridge:scan
-          format: table
-          exit-code: '0'
-          ignore-unfixed: true
-          vuln-type: os,library
-          scanners: vuln
-          severity: CRITICAL,HIGH
-
-      - name: Generate Trivy SARIF report
-        uses: aquasecurity/trivy-action@v0.35.0
-        with:
-          image-ref: protonmail-bridge:scan
-          format: sarif
-          output: trivy-results.sarif
-          exit-code: '0'
-          ignore-unfixed: true
-          vuln-type: os,library
-          scanners: vuln
-          severity: CRITICAL,HIGH
-          limit-severities-for-sarif: true
-
-      - name: Validate SARIF report
-        id: sarif
-        if: always()
+      - name: Set Docker tags
+        id: tags
+        shell: bash
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          if jq empty trivy-results.sarif >/dev/null 2>&1; then
-            echo "valid=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "valid=false" >> "$GITHUB_OUTPUT"
-            echo "Trivy produced invalid SARIF; skipping upload."
-          fi
+          set -euo pipefail
 
-      - name: Upload Trivy SARIF report
-        if: always() && steps.sarif.outputs.valid == 'true'
-        uses: github/codeql-action/upload-sarif@v4
-        with:
-          sarif_file: trivy-results.sarif
+          {
+            echo "meta_tags<<EOF"
+            echo "type=raw,value=${VERSION}"
+            if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+              echo "type=raw,value=latest"
+            fi
+            if [[ "${GITHUB_REF}" == refs/heads/* ]]; then
+              echo "type=ref,event=branch"
+            fi
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
-      - name: Login to GitHub Container Registry
-        uses: docker/login-action@v4
-        if: ${{ github.event_name != 'pull_request' }} # Only login if not a PR
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Push image
-        uses: docker/build-push-action@v7
-        if: ${{ github.event_name != 'pull_request' }} # Only push if not a PR
-        with:
-          context: ./build
-          file: ./build/Dockerfile
-          tags: ${{ steps.docker_meta.outputs.tags }}
-          labels: ${{ steps.docker_meta.outputs.labels }}
-          push: true
+  docker:
+    needs: prepare
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+      security-events: write
+    uses: Enucatl/docker-compose-security-baseline/.github/workflows/docker-ci.yml@main
+    with:
+      image_name: ghcr.io/enucatl/protonmail-bridge
+      version: ${{ needs.prepare.outputs.version }}
+      meta_tags: ${{ needs.prepare.outputs.meta_tags }}
+      context: ./build
+      dockerfile: Dockerfile
+      platforms: linux/amd64
+      push: ${{ github.event_name != 'pull_request' }}
+    secrets: inherit
