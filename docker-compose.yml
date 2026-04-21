@@ -3,7 +3,7 @@ services:
     extends:
       file: ../compose-security-baseline/hardening.yml
       service: hardened-medium
-    image: ghcr.io/enucatl/protonmail-bridge:3.23.1
+    image: ghcr.io/enucatl/protonmail-bridge:3.24.1
     build:
       context: ./build
       dockerfile: Dockerfile
@@ -23,7 +23,7 @@ services:
     extends:
       file: ../compose-security-baseline/hardening.yml
       service: hardened-medium
-    image: ghcr.io/enucatl/protonmail-bridge:3.23.1
+    image: ghcr.io/enucatl/protonmail-bridge:3.24.1
     build:
       context: ./build
       dockerfile: Dockerfile

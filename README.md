@@ -3,7 +3,6 @@
 [![latest tag](https://ghcr-badge.egpl.dev/enucatl/protonmail-bridge/latest_tag?trim=major&label=latest&color=%232496ED)](https://github.com/Enucatl/protonmail-bridge-docker/pkgs/container/protonmail-bridge)
 [![image size](https://img.shields.io/badge/image%20size-~141%20MB-2496ED)](https://github.com/Enucatl/protonmail-bridge-docker/blob/main/README.md)
 [![downloads](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fghcr-badge.elias.eu.org%2Fapi%2FEnucatl%2Fprotonmail-bridge-docker%2Fprotonmail-bridge&query=downloadCount&label=docker%20pulls&color=2496ED&logo=docker&logoColor=white)](https://github.com/Enucatl/protonmail-bridge-docker/pkgs/container/protonmail-bridge)
-[![bridge version](https://img.shields.io/badge/bridge-3.23.1-6D4AFF?logo=protonmail&logoColor=white)](https://github.com/Enucatl/protonmail-bridge-docker/blob/main/build/VERSION)
 [![build](https://img.shields.io/github/actions/workflow/status/Enucatl/protonmail-bridge-docker/build.yaml?branch=main&label=build)](https://github.com/Enucatl/protonmail-bridge-docker/actions/workflows/build.yaml)
 [![scan](https://img.shields.io/badge/scan-Trivy-1904DA?logo=trivy&logoColor=white)](https://github.com/Enucatl/protonmail-bridge-docker/actions/workflows/build.yaml)
 [![security](https://img.shields.io/badge/vulnerabilities-GitHub%20Security-2EA44F?logo=github&logoColor=white)](https://github.com/Enucatl/protonmail-bridge-docker/security/code-scanning)
@@ -13,6 +12,7 @@
 - Minimize the runtime image by shipping only the headless Bridge binary plus required runtime dependencies
 - Reduce the image from 194 MB by removing the GUI launcher and `vault-editor`, stripping the shipped binary, and using a slimmer runtime base image
 - Harden the default runtime by dropping Linux capabilities and enabling `no-new-privileges`
+- Add Trivy image vulnerability scanning to catch packaged dependency issues
 - Keep `pass` and GPG in the image intentionally: we checked the upstream Linux keychain code and `pass` is still the most practical self-contained backend for a container
 - Keep `socat` intentionally: Bridge is still hardcoded to listen on `127.0.0.1`, so the container needs a forwarding shim to expose IMAP and SMTP externally
 - Allow connecting with ipv6
@@ -80,7 +80,7 @@ The initialization step exposes the bridge CLI so you can do things like switch 
 
 ## Build
 
-For anyone who wants to build this container on your own, the image is built from source in the `build/` directory and currently packages Proton Mail Bridge `3.23.1`.
+For anyone who wants to build this container on your own, the image is built from source in the `build/` directory and packages the Bridge release pinned in `build/VERSION`.
 
 ```bash
 docker build -t protonmail-bridge ./build
