@@ -1,8 +1,9 @@
-FROM golang:1.26.2-trixie AS build
+FROM golang:1.26.3-trixie AS build
 
 ARG DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
+    && apt-get upgrade -y --no-install-recommends \
     && apt-get install -y --no-install-recommends build-essential ca-certificates curl libcbor-dev libfido2-dev libsecret-1-dev pkg-config \
     && rm -rf /var/lib/apt/lists/*
 
@@ -21,6 +22,7 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=10s --retries=3 \
     CMD timeout 5 bash -c 'exec 3<>/dev/tcp/localhost/1125 && exec 4<>/dev/tcp/localhost/1243 || exit 1' || exit 1
 
 RUN apt-get update \
+    && apt-get upgrade -y --no-install-recommends \
     # Runtime dependency rationale:
     # - bash: required by /protonmail/entrypoint.sh, and pass itself is a bash script.
     # - ca-certificates: Bridge talks to Proton over TLS and needs the system trust store.
