@@ -56,8 +56,12 @@ ENV XDG_CONFIG_HOME=/data/config \
 
 RUN useradd --create-home --home-dir /home/protonmail --shell /bin/bash protonmail \
     && install -d -o protonmail -g protonmail /data \
-    && install -d -m 700 -o protonmail -g protonmail /data/cache /data/config /data/data /data/pass \
-    && install -d -m 700 -o protonmail -g protonmail /data/gpg
+    && install -d -m 700 -o protonmail -g protonmail \
+        /data/cache \
+        /data/config \
+        /data/data \
+        /data/pass \
+        /data/gpg
 
 USER protonmail
 VOLUME /data
