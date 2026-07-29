@@ -12,6 +12,8 @@ services:
     ports:
       - "10243:1243"
       - "10125:1125"
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m,mode=0700,uid=1000,gid=1000
     volumes:
       - protonmail:/data
       - /opt/docker/traefik/data/certs/docker_key.pem:/protonmail/certs/key.pem:ro
