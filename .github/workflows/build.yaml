@@ -75,4 +75,5 @@ jobs:
       dockerfile: Dockerfile
       platforms: linux/amd64
       push: ${{ github.event_name != 'pull_request' }}
-    secrets: inherit
+    secrets:
+      registry_token: ${{ secrets.GITHUB_TOKEN }}
